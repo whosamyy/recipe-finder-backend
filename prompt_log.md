@@ -671,6 +671,194 @@ At the final checkpoint, tell me:
 10. Whether ANY secrets are present
 11. Exactly what remains for me to submit manually
 
-### 2. Assignment page
+### Prompt 2
+
+My Flask backend for CMU 15-113 HW4 is now deployed on Render.
+
+Backend URL:
+https://recipe-finder-backend-o6bk.onrender.com/
+
+My existing Recipe Finder frontend is located in this repository at:
+
+recipe-finder/
+
+The live frontend is:
+https://whosamyy.github.io/recipe-finder/
+
+Please connect my EXISTING Recipe Finder frontend to the deployed backend.
+
+IMPORTANT:
+- Do not redesign my Recipe Finder.
+- Preserve the existing layout, styling, filters, favorites, recipe cards, and other working features as much as possible.
+- Do not modify my Crossy Road project or any other portfolio files unnecessarily.
+- Do not move the backend into this repository.
+- The backend and frontend must stay separate.
+
+==================================================
+BACKEND ENDPOINT
+==================================================
+
+The frontend should send the user's ingredients to:
+
+PASTE_RENDER_URL_HERE/recommend
+
+using a POST request.
+
+Use:
+
+method: "POST"
+
+headers:
+{
+  "Content-Type": "application/json"
+}
+
+body:
+JSON.stringify(...)
+
+The request body should match what my backend expects.
+
+For example:
+
+{
+  "ingredients": ["chicken", "rice", "garlic"]
+}
+
+If my frontend has filters that correspond to backend options such as limit, maxTime, or difficulty, include them only if the backend actually supports them.
+
+Do not invent request fields.
+
+==================================================
+UPDATE THE FRONTEND
+==================================================
+
+Inspect my existing recipe-finder JavaScript before changing it.
+
+Currently, some of the recipe matching may happen entirely in the frontend.
+
+Change the main recipe recommendation flow so that:
+
+1. The user enters ingredients.
+2. The frontend validates the basic input.
+3. The frontend shows a loading state.
+4. The frontend sends the ingredients to the deployed Render backend.
+5. The backend returns ranked recipe recommendations.
+6. The frontend parses the returned JSON.
+7. The existing recipe cards display the backend results.
+8. Existing features such as opening recipe details, favorites, sorting, or filtering should continue working when possible.
+
+Do not duplicate the backend's ingredient-matching algorithm in the frontend.
+
+The backend should be responsible for the meaningful recommendation processing.
+
+==================================================
+ERROR HANDLING
+==================================================
+
+Handle all of these gracefully:
+
+- user submits no ingredients
+- backend takes a while to wake up
+- network request fails
+- Render backend is unavailable
+- backend returns a non-200 response
+- backend returns an error JSON object
+- response is missing expected data
+- no matching recipes are returned
+
+Show clear human-readable messages instead of console errors or crashes.
+
+Because Render's free service may sleep, use a friendly loading message such as:
+
+"Finding recipes... The server may take a few seconds to wake up."
+
+Do not treat a slow first request as an immediate failure.
+
+==================================================
+SECURITY
+==================================================
+
+Do not add any API key, token, credential, password, or secret to the frontend.
+
+The frontend should ONLY contain the public Render service URL.
+
+Do not put any backend secret or environment variable in JavaScript.
+
+Search the files you modify and confirm that no secrets have been added.
+
+==================================================
+CORS / CONNECTION TEST
+==================================================
+
+Test whether the GitHub Pages frontend can successfully communicate with the Render backend.
+
+If a CORS error occurs:
+
+- tell me the exact error
+- explain what needs to change in the BACKEND
+- do not work around browser security in the frontend
+
+The backend should allow requests from:
+
+https://whosamyy.github.io
+
+==================================================
+PROMPT LOG
+==================================================
+
+If my HW4 prompt log is stored in the backend repository, do not create a fake second prompt log here.
+
+Tell me that I should copy this prompt verbatim into the backend repository's prompt_log.md as another Key Prompt.
+
+Do not summarize or rewrite it.
+
+==================================================
+TESTING
+==================================================
+
+After connecting the frontend, test the complete workflow:
+
+GitHub Pages frontend
+→ Render backend
+→ DummyJSON API
+→ backend matching
+→ JSON response
+→ frontend recipe cards
+
+Test at least:
+
+1. chicken, rice, garlic
+2. one ingredient
+3. several ingredients
+4. empty input
+5. nonsense ingredient
+6. backend error handling
+7. recipe details
+8. favorites after receiving backend results
+9. existing filters/sorting if applicable
+
+Check the browser console for errors.
+
+==================================================
+FINAL CHECK
+==================================================
+
+When finished, tell me:
+
+1. Every frontend file you changed.
+2. The exact backend URL being called.
+3. The exact endpoint being called.
+4. An example request body.
+5. What the frontend does with the response.
+6. How loading is handled.
+7. How errors are handled.
+8. Whether any existing Recipe Finder features stopped working.
+9. Whether you found any CORS problems.
+10. Whether ANY secrets or private keys are present in the frontend.
+11. How I should test the live GitHub Pages version.
+
+Do not commit or push yet. Let me review the changes first.
+
+### 3. Assignment page
 
 Here's the full instructions: [https://www.cs.cmu.edu/\~113/hw4.html](https://www.cs.cmu.edu/~113/hw4.html)
