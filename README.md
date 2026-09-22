@@ -6,9 +6,9 @@ This Flask backend receives ingredients, validates and normalizes them, fetches 
 
 - Frontend repository: https://github.com/whosamyy/whosamyy.github.io
 - Frontend website: https://whosamyy.github.io/recipe-finder/
-- Backend repository: pending creation of a separate public `recipe-finder-backend` repository.
-- Render URL: pending deployment.
-- Frontend integration: pending the actual Render URL. The existing HW3 frontend still calls DummyJSON directly; it has not yet been changed to call this backend.
+- Backend repository: https://github.com/whosamyy/recipe-finder-backend
+- Render URL: https://recipe-finder-backend-o6bk.onrender.com/
+- Frontend integration: implemented in the separate frontend repository; recipe searches call the backend’s `POST /recommend` endpoint.
 
 ## Endpoints
 
@@ -77,13 +77,14 @@ CORS allows `https://whosamyy.github.io`, `http://localhost:8000`, and `http://1
 
 Invalid inputs return 400; oversized bodies return 413; external failures or unexpected external data return 502; unexpected application failures return 500 with a generic message. Errors use `{"success":false,"error":"Readable explanation"}`. Exception details and request bodies are not printed. Requests to DummyJSON have a 3-second connection timeout and a 10-second read timeout. Debug mode is off.
 
-## Frontend communication — planned integration
+## Frontend communication
 
-After deployment, update `recipe-finder/app.js` in the **frontend repository**, preserving the existing design. On Find recipes, send a request like:
+When the user chooses Find recipes, the frontend sends their ingredients as JSON to `POST https://recipe-finder-backend-o6bk.onrender.com/recommend`. The backend retrieves recipes from DummyJSON, ranks ingredient matches, and returns recipe data for the frontend to display as recipe cards. Matching is handled on the backend.
+
+Example request from the frontend:
 
 ```js
-// Replace with the actual public Render origin after deployment.
-const BACKEND_URL = "https://YOUR-SERVICE.onrender.com";
+const BACKEND_URL = "https://recipe-finder-backend-o6bk.onrender.com";
 const response = await fetch(`${BACKEND_URL}/recommend`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -93,18 +94,29 @@ const data = await response.json();
 if (!response.ok) throw new Error(data.error || "Recipe search failed.");
 ```
 
-The final frontend should show loading feedback, validate the response, render returned recipes using backend match fields, preserve filters/favorites/details, and show readable errors. A failed or superseded request must not display stale results. This snippet is documentation, not a completed integration. Before pushing, verify the active frontend URL is the real Render URL, not localhost or the placeholder above.
+The response includes `recipes`, `count`, and the normalized `ingredients`. Each recipe includes `matchedIngredients`, `missingIngredients`, `matchCount`, and `matchPercentage` for displaying recommendation results. Errors return `success: false` and a readable `error` message.
+
+To verify the deployed integration, check that searches show loading feedback and returned recipe cards, empty input and network failures produce readable messages, and no matches produces an empty-results message. Also check recipe details, filters, and favorites after a search.
 
 ## Render deployment
 
-After local tests pass:
+The backend is deployed at https://recipe-finder-backend-o6bk.onrender.com/. To recreate the deployment, connect the public backend repository to a Render Python Web Service with these settings:
 
-1. Create a separate public GitHub repository named `recipe-finder-backend` and upload these backend files at its root. Do not upload `.venv`, environment files, or the frontend.
-2. In Render, choose **New → Web Service** and connect that repository.
-3. Choose the Python runtime, leave Root Directory blank, use `pip install -r requirements.txt` as Build Command and `gunicorn app:app` as Start Command. Select the Free instance type. Set `PYTHON_VERSION` to `3.13.7` to match the local interpreter; this is public configuration, not a secret.
-4. Deploy and copy the actual public service URL into the links section above.
-5. Repeat the curl checks above using that HTTPS URL in place of `http://127.0.0.1:5000`.
-6. Provide that URL for frontend integration. Then test the complete deployed GitHub Pages → Render → DummyJSON → results flow and error states before pushing the final frontend change.
+- Root Directory: repository root (leave blank).
+- Build Command: `pip install -r requirements.txt`.
+- Start Command: `gunicorn app:app`.
+- Instance type: Free.
+- Python version: `PYTHON_VERSION=3.13.7`.
+- API keys: none required.
+
+Check the running service with:
+
+```sh
+curl -i https://recipe-finder-backend-o6bk.onrender.com/health
+curl -i https://recipe-finder-backend-o6bk.onrender.com/recommend -H 'Content-Type: application/json' -d '{"ingredients":["chicken","rice","garlic"]}'
+```
+
+Repeat the local error-case requests against this public URL, then verify the complete GitHub Pages → Render → DummyJSON → recipe cards workflow in the browser.
 
 These commands assume `app.py` and `requirements.txt` are at the backend repository root. See [Render's Flask guide](https://render.com/docs/deploy-flask). Free services may sleep while idle; allow extra time on the first request.
 
@@ -113,17 +125,18 @@ These commands assume `app.py` and `requirements.txt` are at the backend reposit
 - [x] Meaningful backend processing and structured JSON.
 - [x] Input validation and JSON error handling.
 - [x] Backend README and verbatim key prompt log.
-- [ ] New public backend GitHub repository.
-- [ ] Running public Render deployment and public endpoint tests.
-- [ ] Frontend calls Render and displays returned data, with loading and errors.
+- [x] New public backend GitHub repository.
+- [x] Running public Render deployment; health and recommendation success responses verified.
+- [x] Frontend calls the backend (integration completed by the project owner).
+- [ ] Verify deployed result display, loading feedback, and error handling in the browser.
 - [ ] Frontend integration pushed to GitHub and deployed on Pages.
 - [ ] Full browser integration and error tests on the deployed site.
-- [x] Existing portfolio link points to `recipe-finder/` (frontend unchanged).
+- [x] Existing portfolio link points to `recipe-finder/` (existing portfolio integration).
 - [ ] Final security inspection of both repositories before publication.
 - [ ] Record and upload a short demo video; test viewing permissions in incognito.
 - [ ] Submit the Google Form linked from the assignment page before the deadline.
 
-The frontend site already exists, but its HW4 integration is pending. Do not mark this assignment complete until all required deliverables are verified.
+The backend is public and deployed, and frontend integration has been implemented. Unchecked items above still need verification or completion; they do not imply that the frontend integration code is missing.
 
 ## 30–60 second video order
 
@@ -135,6 +148,8 @@ The frontend site already exists, but its HW4 integration is pending. Do not mar
 
 Submit the frontend URL, both repository URLs, public backend URL, and viewable video link through the [HW4 assignment form link](https://www.cs.cmu.edu/~113/hw4.html).
 
-## Local verification checkpoint
+## Verification checkpoints
 
-On September 21, 2026, all 10 automated test methods passed, along with the Gunicorn configuration check. Live Flask HTTP requests on port 5001 returned 200 for `/` and `/health`, 200 with 10 real recipes for chicken/rice/garlic, 400 for empty/missing/malformed inputs, and 200 with an empty list for unobtainium. Port 5000 was occupied. All six project files were inspected; no secrets were found. The original project prompt is preserved verbatim. Public deployment and frontend integration are still untested and pending.
+On September 21, 2026, all 10 automated test methods passed, along with the Gunicorn configuration check. Live Flask HTTP requests on port 5001 returned 200 for `/` and `/health`, 200 with 10 real recipes for chicken/rice/garlic, 400 for empty/missing/malformed inputs, and 200 with an empty list for unobtainium. Port 5000 was occupied. All six project files were inspected; no secrets were found. The original project prompt is preserved verbatim.
+
+On September 22, 2026, the backend GitHub repository was confirmed public. The deployed `/health` endpoint returned `{"status":"healthy"}`, and `POST /recommend` returned HTTP 200 with a real recipe for chicken/rice/garlic. The recommendation response included the CORS header allowing `https://whosamyy.github.io`. A fresh local test run could not start because the active Python environment lacked `requests`; install the dependencies using the setup instructions above before rerunning tests. The project owner confirmed frontend integration is implemented; full browser verification of the deployed integration remains a separate checklist item.
